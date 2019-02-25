@@ -1,2 +1,10 @@
 {
+	"check_frequency": "3600",
+	"report_frequency": "2592000",
+	"scanned_directories": [
+		"./"
+	],
+	"scanned_extensions": [
+		"bmp", "jpg", "png", "raw", "svg", "tiff"
+	]
 }
