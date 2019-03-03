@@ -47,8 +47,12 @@ def save_hashes(hashes):
 	file.write(encrypted_data)
 	file.close()
 
+hashes = None
+
+if not os.path.isfile(hashes_file_path):
+	# If the hashes file doesn't exist, it may mean either this is the first time this script is being run or an attacker has deleted the hashes.
+	print("The hash file doesn't exist. If this is not the first time you've run this program, it means it's been deleted and your files may have been tampered with.")
+else:
+	hashes = load_hashes()
 
 
-# TODO:
-# If the hashes file doesn't exist, it may mean either this is the first time this script is being run or an attacker has deleted the hashes. Send a warning!
-# The warning should warn that the script is running for the first time and that if it's not, then the hashes have been deleted and there's a possibility that the files have been tampered with.
