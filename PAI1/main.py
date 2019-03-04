@@ -14,6 +14,9 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
+import hashlib
+import datetime
+import threading
 
 # Path to the configuration file
 configuration_file_path = "configuration.json"
@@ -37,6 +40,12 @@ security_file_path = configuration["security_file_path"]
 encryption_kdf = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, salt = b"salt_", iterations = 100000, backend = default_backend())
 encryption_key = base64.urlsafe_b64encode(encryption_kdf.derive(password))
 encryption_fernet = Fernet(key)
+
+#inicio de hilos
+t1 = threading.Thread(target=main_loop)
+t1.start()
+t2 = threading.Thread(target=main_loop_report)
+t2.start()
 
 # Functions to load and save encrypted files, encrypting or decrypting the data to be saved in the process
 
@@ -68,8 +77,40 @@ else:
 	old_hashes = load_hashes(security_file_path)
 
 # TODO: hash files and store the hashes in new_hashes
-new_hashes = None
+def load_new_hashes():
+	#TODO scanned_directories
+	scanned_directories=None
+	hashes=[]
+	for file in os.listdir(scanned_directories):
+	    hashes.append(get_hash(file))
+	return hashes
 
-# TODO: compare old_hashes and new_hashes
+def load_hashes():
+	hashes=[]
+	f = open("hashes_file_path", "r")
+	#desencriptar
+	for line in f:
+		hashes.append(line)
+	return hashes
+
+def main_loop():
+	while True:
+		old_hashes=load_hashes()
+		new_hashes=load_new_hashes()
+		filenames=load_file_names()
+		n=0
+		for i in old_hashes:
+			if(new_hashes[i]!=old_hashes[i])
+					file = open(security_file_path, "w")
+					file.write(datetime.datetime.now()+"|NEW INCIDENCE|"+filenames[i]+" has been modified without permission.")
+			n=n+1
+		#tiempo check de configuration.json
+		time.sleep()
+
+def main_loop_report():
+	while True:
+		#tiempo report de configuration.json
+		time.sleep()
+		#envia report
 
 # TODO: Give 2-3 options at least for hash algorithms
