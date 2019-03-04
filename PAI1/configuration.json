@@ -1,6 +1,6 @@
 {
 	"algorithm": "SHA-256",
-	"algorithm options": [
+	"algorithm_options": [
 		"\"SHA-224\"",
 		"\"SHA-256\" (recommended)",
 		"\"SHA-384\"",
