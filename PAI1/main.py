@@ -41,7 +41,20 @@ encryption_kdf = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, salt = b"s
 encryption_key = base64.urlsafe_b64encode(encryption_kdf.derive(password))
 encryption_fernet = Fernet(key)
 
-#inicio de hilos
+# Select hashing algorithm
+
+algorithms = {
+	"SHA-224": hashes.SHA224(),
+	"SHA-256": hashes.SHA256(),
+	"SHA-384": hashes.SHA384(),
+	"SHA-512": hashes.SHA512(),
+	"MD5": hashes.MD5()
+}
+
+algorithm = algorithms[configuration["algorithm"]]
+
+# Start threads
+
 t1 = threading.Thread(target=main_loop)
 t1.start()
 t2 = threading.Thread(target=main_loop_report)
@@ -78,9 +91,9 @@ else:
 
 # TODO: hash files and store the hashes in new_hashes
 def load_new_hashes():
-	#TODO scanned_directories
-	scanned_directories=None
-	hashes=[]
+	# TODO: scanned_directories
+	scanned_directories = None
+	hashes = []
 	for file in os.listdir(scanned_directories):
 	    hashes.append(get_hash(file))
 	return hashes
@@ -88,29 +101,29 @@ def load_new_hashes():
 def load_hashes():
 	hashes=[]
 	f = open("hashes_file_path", "r")
-	#desencriptar
+	# Decrypt
 	for line in f:
 		hashes.append(line)
 	return hashes
 
 def main_loop():
 	while True:
-		old_hashes=load_hashes()
-		new_hashes=load_new_hashes()
-		filenames=load_file_names()
-		n=0
+		old_hashes = load_hashes()
+		new_hashes = load_new_hashes()
+		filenames = load_file_names()
+		n = 0
 		for i in old_hashes:
-			if(new_hashes[i]!=old_hashes[i])
-					file = open(security_file_path, "w")
-					file.write(datetime.datetime.now()+"|NEW INCIDENCE|"+filenames[i]+" has been modified without permission.")
-			n=n+1
-		#tiempo check de configuration.json
+			if new_hashes[i] != old_hashes[i]:
+				file = open(security_file_path, "w")
+				file.write(datetime.datetime.now()+"|NEW INCIDENCE|"+filenames[i]+" has been modified without permission.")
+			n = n + 1
+		# Time check of configuration.json
 		time.sleep()
 
 def main_loop_report():
 	while True:
-		#tiempo report de configuration.json
+		# Time report of configuration.json
 		time.sleep()
-		#envia report
+		# Send report
 
 # TODO: Give 2-3 options at least for hash algorithms
