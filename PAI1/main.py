@@ -95,7 +95,7 @@ def load_new_hashes():
 	scanned_directories = None
 	hashes = []
 	for file in os.listdir(scanned_directories):
-	    hashes.append(get_hash(file))
+	    hashes.append(algorithm.update(file).hexdigest())
 	return hashes
 
 def load_hashes():
