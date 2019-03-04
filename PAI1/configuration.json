@@ -1,4 +1,6 @@
 {
+	"hashes_file_path": "hashes"
+	"security_file_path": "security",
 	"check_frequency": "3600",
 	"report_frequency": "2592000",
 	"scanned_directories": [
