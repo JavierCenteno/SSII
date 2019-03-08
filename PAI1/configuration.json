@@ -7,9 +7,9 @@
 		"\"SHA-512\"",
 		"\"MD5\" (not recommended)"
 	],
-	"hashes_file_path": "hashes"
+	"hashes_file_path": "hashes",
 	"security_file_path": "security",
-	"check_frequency": "3600",
+	"check_frequency": "5",
 	"report_frequency": "2592000",
 	"scanned_directories": [
 		"./"
