@@ -10,7 +10,7 @@
 	"hashes_file_path": "hashes",
 	"security_file_path": "security",
 	"check_frequency": "5",
-	"report_frequency": "2592000",
+	"report_frequency": "16",
 	"scanned_directories": [
 		"./"
 	],
