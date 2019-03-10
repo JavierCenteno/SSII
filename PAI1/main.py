@@ -28,6 +28,7 @@ configuration = json.loads(codecs.open(configuration_file_path, "r", encoding="u
 hashes_file_path = configuration["hashes_file_path"]
 security_file_path = configuration["security_file_path"]
 scanned_directories = configuration["scanned_directories"]
+scanned_extensions = configuration["scanned_extensions"]
 check_frequency = int(configuration["check_frequency"])
 report_frequency = int(configuration["report_frequency"])
 
@@ -36,7 +37,7 @@ encryption_key = base64.urlsafe_b64encode(encryption_kdf.derive(password))
 encryption_fernet = Fernet(encryption_key)
 
 def get_algorithm():
-	name=configuration["algorithm"]
+	name = configuration["algorithm"]
 	if name == "SHA-224":
 		return hashlib.sha224()
 	if name == "SHA-256":
@@ -47,7 +48,6 @@ def get_algorithm():
 		return hashlib.sha512()
 	if name == "MD5":
 		return hashlib.md5()
-
 	raise ValueError("The algorithm specified on configuration.json is not correct, choose one of the available options.")
 
 def load_encrypted_file(file_path):
@@ -65,7 +65,6 @@ def load_encrypted_file(file_path):
 
 def save_encrypted_file(file_path, data):
 	file = open(file_path, "wb")
-
 	encrypted_data = encryption_fernet.encrypt(data.encode())
 	file.write(encrypted_data)
 	file.close()
@@ -75,25 +74,27 @@ def hash_file(file_path):
 	with open(file_path, "rb") as f:
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash.update(chunk)
-
 	return hash.hexdigest()
 
 def calculate_hashes():
 	hashes_dict = {}
-	totalfiles=0
+	totalfiles = 0
+	scanned_files = []
+	for directory in scanned_directories:
+		scanned_files += [name for name in os.listdir(directory) if os.path.isfile(name)]
+	scanned_files += [name for name in os.listdir(os.path.abspath(os.sep)) if os.path.isfile(name) and name.endswith(tuple(scanned_extensions))]
 	for directory in scanned_directories:
 		totalfiles = totalfiles + len([name for name in os.listdir(directory) if os.path.isfile(name)])
 		for file in os.listdir(directory):
 			if os.stat(file).st_size != 0:
-				hashes_dict[file]=hash_file(file)
+				hashes_dict[file] = hash_file(file)
 			else:
-				hashes_dict[file]=0
+				hashes_dict[file] = 0
 	return (hashes_dict,totalfiles)
 
 def load_hashes():
 	f = load_encrypted_file(hashes_file_path)
-
-	if f!="":
+	if f != "":
 		hashes_map = json.loads(f)
 	else:
 		hashes_map = {}
@@ -137,7 +138,6 @@ def main_loop():
 		for filename in new_hashes:
 			if filename not in old_hashes:
 				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been added.\n")
-
 		for filename in old_hashes:
 			if filename not in new_hashes:
 				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been deleted.\n")
@@ -146,20 +146,19 @@ def main_loop():
 				if filename!=security_file_path and filename != hashes_file_path:
 					add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been modified.\n")
 					modified.append(filename)
-
 		save_hashes(new_hashes)
-		add_to_security_report(str(100-100*len(set(modified))/total)+"% of files have NOT been modified or deleted in the last day.\n")
+		add_to_security_report(str(100 - 100 * len(set(modified)) / total) + "% of files have NOT been modified or deleted in the last day.\n")
 		time.sleep(check_frequency)
 
 def main_loop_report():
 	while True:
 		time.sleep(report_frequency)
 		print("------------- MONTHLY REPORT -------------")
-		print( str(load_encrypted_file(security_file_path)))
+		print(str(load_encrypted_file(security_file_path)))
 		with open(security_file_path, "w"):
 			pass
 
-t1 = threading.Thread(target=main_loop)
+t1 = threading.Thread(target = main_loop)
 t1.start()
-t2 = threading.Thread(target=main_loop_report)
+t2 = threading.Thread(target = main_loop_report)
 t2.start()
