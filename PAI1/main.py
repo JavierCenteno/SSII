@@ -64,25 +64,22 @@ def load_encrypted_file(file_path):
 		data = ""
 	return data
 
-def save_encrypted_file(file_path, list):
+def save_encrypted_file(file_path, data):
 	file = open(file_path, "wb")
-	data = ""
-	for l in list:
-		data = data + str(l) + "\n"
 	encrypted_data = encryption_fernet.encrypt(data.encode())
 	file.write(encrypted_data)
 	file.close()
 # TODO: hash files and store the hashes in new_hashes
 
-def hash_file(file):
+def hash_file(file_path):
 	hash = algorithm
-	with open(file, "rb") as f:
+	with open(file_path, "rb") as f:
 		# Reads file in chunks of 4096 bytes, doesn't have to load whole file on memory, which can be problematic with very big files.
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash.update(chunk)
 	return hash.hexdigest()
 
-def load_new_hashes():
+def calculate_hashes():
 	hashes_list = []
 	for directory in scanned_directories:
 		for file in os.listdir(directory):
@@ -91,13 +88,27 @@ def load_new_hashes():
 				hashes_list.append(hash_file(file))
 	return hashes_list
 
-def load_old_hashes():
-	hashes = []
+def load_hashes():
 	f = str(load_encrypted_file(hashes_file_path))
 	print(f)
-	for line in f:
-		hashes.append(line)
-	return hashes
+	hashes_map = json.loads(f)
+	return hashes_map
+
+def save_hashes(hashes_map):
+	hashes_map_string = json.dumps(hashes_map)
+	save_encrypted_file(hashes_file_path, hashes_map_string)
+
+def load_security_report():
+	f = str(load_encrypted_file(security_file_path))
+	return f
+
+def save_security_report(report):
+	save_encrypted_file(security_file_path, report)
+
+def add_to_security_report(report):
+	security_report = load_security_report()
+	security_report += report
+	save_security_report(security_report)
 
 old_hashes = None
 
@@ -111,7 +122,7 @@ if not os.path.isfile(security_file_path):
 	# If the security file doesn't exist, it may mean either this is the first time this script is being run or an attacker has deleted the file.
 	print("The security file doesn't exist. If this is not the first time you've run this program, it means it's been deleted and your files may have been tampered with.")
 else:
-	old_hashes = load_old_hashes()
+	old_hashes = load_hashes()
 
 def load_file_names():
 	names = []
@@ -122,18 +133,19 @@ def load_file_names():
 
 def main_loop():
 	while True:
-		old_hashes = load_old_hashes()
-		new_hashes = load_new_hashes()
-		filenames = load_file_names()
-		n = 0
+		old_hashes = load_hashes()
+		new_hashes = calculate_hashes()
 		print("New hashes: " + str(new_hashes))
 		print("Old hashes: " + str(old_hashes))
-		for i in range(len(old_hashes)):
-			if new_hashes[i] != old_hashes[i]:
-				file = open(security_file_path, "w")
-				file.write(datetime.datetime.now() + "|NEW INCIDENCE|" + filenames[i] + " has been modified without permission.")
-			n = n + 1
-		save_encrypted_file(hashes_file_path,new_hashes)
+		for filename in new_hashes:
+			if filename not in old_hashes:
+				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been added.")
+			if new_hashes[filename] != old_hashes[filename]:
+				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been modified.")
+		for filename in old_hashes:
+			if filename not in new_hashes:
+				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been deleted.")
+		save_hashes(hashes_file_path, new_hashes)
 		# Time check of configuration.json
 		time.sleep(check_frequency)
 
