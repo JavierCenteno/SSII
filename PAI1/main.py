@@ -82,15 +82,14 @@ def calculate_hashes():
 	totalfiles = 0
 	scanned_files = []
 	for directory in scanned_directories:
-		scanned_files += [name for name in os.listdir(directory) if os.path.isfile(name)]
-	scanned_files += [name for name in os.listdir(os.path.abspath(os.sep)) if os.path.isfile(name) and name.endswith(tuple(scanned_extensions))]
-	for directory in scanned_directories:
-		totalfiles = totalfiles + len([name for name in os.listdir(directory) if os.path.isfile(name)])
-		for file in os.listdir(directory):
-			if os.stat(file).st_size != 0:
-				hashes_dict[file] = hash_file(file)
-			else:
-				hashes_dict[file] = 0
+		scanned_files += [name for name in os.listdir(directory) if os.path.isfile(name) and name.split(".")[len(name.split("."))-1] in scanned_extensions]
+
+	totalfiles = len(scanned_files)
+	for file in scanned_files:
+		if os.stat(file).st_size != 0:
+			hashes_dict[file] = hash_file(file)
+		else:
+			hashes_dict[file] = 0
 	return (hashes_dict,totalfiles)
 
 def load_hashes():
@@ -143,12 +142,17 @@ def main_loop():
 			if filename not in new_hashes:
 				add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been deleted.\n")
 				modified.append(filename)
-			if new_hashes[filename] != old_hashes[filename]:
-				if filename!=security_file_path and filename != hashes_file_path:
-					add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been modified.\n")
-					modified.append(filename)
+			else:
+				if new_hashes[filename] != old_hashes[filename]:
+					if filename!=security_file_path and filename != hashes_file_path:
+						add_to_security_report(str(datetime.datetime.now()) + "|NEW INCIDENCE|" + filename + " has been modified.\n")
+						modified.append(filename)
 		save_hashes(new_hashes)
-		add_to_security_report(str(100 - 100 * len(set(modified)) / total) + "% of files have NOT been modified or deleted in the last day.\n")
+		if total != 0:
+			integrity=100 - 100 * len(set(modified)) / total
+		else:
+			integrity=100
+		add_to_security_report(str(integrity) + "% of files have NOT been modified or deleted in the last day.\n")
 		time.sleep(check_frequency)
 
 def main_loop_report():

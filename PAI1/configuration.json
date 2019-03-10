@@ -15,6 +15,6 @@
 		"./"
 	],
 	"scanned_extensions": [
-		"bin", "bmp", "ext", "gif", "jpeg", "jpg", "png", "raw", "svg", "tiff"
+		"bin", "bmp", "ext", "gif", "jpeg", "jpg", "png", "raw", "svg", "tiff" , "txt"
 	]
 }
