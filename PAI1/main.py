@@ -19,28 +19,21 @@ import hashlib
 import datetime
 import threading
 
-# Path to the configuration file
 configuration_file_path = "configuration.json"
 
-# Password, used to encrypt/decrypt hash files
 password = input("Please write your password: ").encode()
 
-# Program configuration
 configuration = json.loads(codecs.open(configuration_file_path, "r", encoding="utf8").read())
 
-# Load configuration
 hashes_file_path = configuration["hashes_file_path"]
 security_file_path = configuration["security_file_path"]
 scanned_directories = configuration["scanned_directories"]
 check_frequency = int(configuration["check_frequency"])
 report_frequency = int(configuration["report_frequency"])
 
-# Create key
 encryption_kdf = PBKDF2HMAC(algorithm = hashes.SHA256(), length = 32, salt = b"salt_", iterations = 100000, backend = default_backend())
 encryption_key = base64.urlsafe_b64encode(encryption_kdf.derive(password))
 encryption_fernet = Fernet(encryption_key)
-
-# Select hashing algorithm
 
 def get_algorithm():
 	name=configuration["algorithm"]
@@ -56,9 +49,6 @@ def get_algorithm():
 		return hashlib.md5()
 
 	raise ValueError("The algorithm specified on configuration.json is not correct, choose one of the available options.")
-
-# Start threads
-# Functions to load and save encrypted files, encrypting or decrypting the data to be saved in the process
 
 def load_encrypted_file(file_path):
 	if os.stat(file_path).st_size != 0:
@@ -79,12 +69,10 @@ def save_encrypted_file(file_path, data):
 	encrypted_data = encryption_fernet.encrypt(data.encode())
 	file.write(encrypted_data)
 	file.close()
-# TODO: hash files and store the hashes in new_hashes
 
 def hash_file(file_path):
-	hash =  get_algorithm()
+	hash = get_algorithm()
 	with open(file_path, "rb") as f:
-		# Reads file in chunks of 4096 bytes, doesn't have to load whole file on memory, which can be problematic with very big files.
 		for chunk in iter(lambda: f.read(4096), b""):
 			hash.update(chunk)
 
@@ -98,6 +86,8 @@ def calculate_hashes():
 		for file in os.listdir(directory):
 			if os.stat(file).st_size != 0:
 				hashes_dict[file]=hash_file(file)
+			else:
+				hashes_dict[file]=0
 	return (hashes_dict,totalfiles)
 
 def load_hashes():
@@ -125,10 +115,7 @@ def add_to_security_report(report):
 	security_report += report
 	save_security_report(security_report)
 
-old_hashes = None
-
 if not os.path.isfile(hashes_file_path):
-	# If the hashes file doesn't exist, it may mean either this is the first time this script is being run or an attacker has deleted the hashes.
 	print("The hash file doesn't exist. If this is not the first time you've run this program, it means it's been deleted and your files may have been tampered with.")
 else:
 	old_hashes = load_encrypted_file(hashes_file_path)
@@ -136,19 +123,11 @@ else:
 		print("The hash file is empty. If this is not the first time you've run this program, it means it's been deleted and your files may have been tampered with.")
 
 if not os.path.isfile(security_file_path):
-	# If the security file doesn't exist, it may mean either this is the first time this script is being run or an attacker has deleted the file.
 	print("The security file doesn't exist. If this is not the first time you've run this program, it means it's been deleted and your files may have been tampered with.")
 else:
 	if os.stat(security_file_path).st_size == 0:
 		print("The security file is empty. If this is not the first time you've run this program, it means it's been deleted and the reports may have been lost.")
 	old_hashes = load_hashes()
-
-def load_file_names():
-	names = []
-	for directory in scanned_directories:
-		for file in os.listdir(directory):
-			names.append(file)
-	return names
 
 def main_loop():
 	while True:
@@ -169,14 +148,16 @@ def main_loop():
 					modified.append(filename)
 
 		save_hashes(new_hashes)
-		# Time check of configuration.json
 		add_to_security_report(str(100-100*len(set(modified))/total)+"% of files have NOT been modified or deleted in the last day.\n")
 		time.sleep(check_frequency)
 
 def main_loop_report():
 	while True:
 		time.sleep(report_frequency)
+		print("------------- MONTHLY REPORT -------------")
 		print( str(load_encrypted_file(security_file_path)))
+		with open(security_file_path, "w"):
+			pass
 
 t1 = threading.Thread(target=main_loop)
 t1.start()
