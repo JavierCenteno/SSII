@@ -18,10 +18,11 @@ from cryptography.fernet import Fernet
 import hashlib
 import datetime
 import threading
+import getpass
 
 configuration_file_path = "configuration.json"
 
-password = input("Please write your password: ").encode()
+password = getpass.getpass("Please write your password: ").encode()
 
 configuration = json.loads(codecs.open(configuration_file_path, "r", encoding="utf8").read())
 
