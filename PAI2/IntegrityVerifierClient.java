@@ -51,7 +51,7 @@ public class IntegrityVerifierClient {
 	/**
 	 * Instances a client.
 	 */
-	public static void main(String[] args) {
+	public static void run() {
 		new IntegrityVerifierClient();
 	}
 

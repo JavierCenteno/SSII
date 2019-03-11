@@ -39,7 +39,7 @@ public class IntegrityVerifierServer {
 	/**
 	 * Instances a server and runs it.
 	 */
-	public static void main(String[] args) {
+	public static void run() {
 		IntegrityVerifierServer server = null;
 		try {
 			server = new IntegrityVerifierServer();
