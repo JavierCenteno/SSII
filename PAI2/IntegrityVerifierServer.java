@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.MessageDigest;
 
 import javax.net.ServerSocketFactory;
 
@@ -18,44 +19,43 @@ public class IntegrityVerifierServer {
 	////////////////////////////////////////////////////////////////////////////////
 	// Instance fields
 
+	/**
+	 * Socket used by the server.
+	 */
 	private ServerSocket serverSocket;
+	/**
+	 * Key used to generate the MACs.
+	 */
+	private String key;
+	/**
+	 * Algorithm used to generate the MACs.
+	 */
+	private MessageDigest algorithm;
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Instance initializers
 
 	/**
 	 * Constructs a server.
+	 * 
+	 * @throws IOException
 	 */
-	public IntegrityVerifierServer() throws Exception {
+	public IntegrityVerifierServer(String key, MessageDigest algorithm) throws IOException {
 		// ServerSocketFactory to build theServerSockets
 		ServerSocketFactory socketFactory = (ServerSocketFactory) ServerSocketFactory.getDefault();
 		// Creation of a ServerSocket listining at 7070 port
 		this.serverSocket = (ServerSocket) socketFactory.createServerSocket(7070);
-	}
-
-	////////////////////////////////////////////////////////////////////////////////
-	// Class methods
-
-	/**
-	 * Instances a server and runs it.
-	 */
-	public static void run() {
-		IntegrityVerifierServer server = null;
-		try {
-			server = new IntegrityVerifierServer();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		server.runServer();
+		this.key = key;
+		this.algorithm = algorithm;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Instance methods
 
 	/**
-	 * Execution of the server to listen the clients.
+	 * Runs this server.
 	 */
-	private void runServer() {
+	public void run() {
 		while (true) {
 			// Hold on the request of the clients to check messages and MACs
 			try {
