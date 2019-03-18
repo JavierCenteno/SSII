@@ -47,8 +47,10 @@ public class IntegrityVerifierClient {
 			String message = JOptionPane.showInputDialog(null, "Enter message:");
 			// Send message to the server
 			output.println(message);
+			// Calculate nonce
+			String nonce = "";//TODO
 			// Calculate the MAC with shared key
-			String messageMAC = "";// TODO: calculate MAC
+			String messageMAC = Util.fromByteArray(algorithm.digest((message + key + nonce).getBytes()));// TODO: calculate MAC
 			output.println(messageMAC);
 			// Flush operations to send messages correctly
 			output.flush();

@@ -67,10 +67,12 @@ public class IntegrityVerifierServer {
 				PrintWriter output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 				// Read client's message and its MAC
 				String message = input.readLine();
+				// Calculate nonce
+				String nonce = "";//TODO
 				// Compute MAC of the message
-				String computedMessageMAC = "";// TODO: compute MAC
-				String sentMessageMAC = input.readLine();
-				if (sentMessageMAC.equals(computedMessageMAC)) {
+				String computedMessageMAC = Util.fromByteArray(algorithm.digest((message + key + nonce).getBytes()));// TODO: compute MAC
+				String messageMAC = input.readLine();
+				if (messageMAC.equals(computedMessageMAC)) {
 					output.println("Message sent with integrity");
 				} else {
 					output.println("Message sent with NO integrity.");
