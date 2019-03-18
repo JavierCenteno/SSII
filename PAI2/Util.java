@@ -21,7 +21,7 @@ public class Util {
 	public static String fromByteArray(byte[] bytes) {
 		StringBuilder stringBuilder = new StringBuilder(bytes.length * 2);
 		for (int index = 0; index < bytes.length; ++index) {
-			stringBuilder.append(intToHex(bytes[index] & 0xFF));
+			stringBuilder.append(intToHex(bytes[index] & 0xF));
 			stringBuilder.append(intToHex(bytes[index] >>> 4));
 		}
 		return stringBuilder.toString();
