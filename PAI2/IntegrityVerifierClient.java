@@ -36,37 +36,46 @@ public class IntegrityVerifierClient {
 	// Instance methods
 
 	/**
-	 * Runs this client.
+	 * Attempts to send a message to the server.
 	 */
-	public void run() {
+	public void sendMessage(String message) {
+		// Socket to communicate with the server
+		Socket socket = null;
+		// BufferedReader to read from the server
+		BufferedReader input = null;
+		// PrintWriter to send data to the server
+		PrintWriter output = null;
 		try {
 			SocketFactory socketFactory = (SocketFactory) SocketFactory.getDefault();
-			Socket socket = (Socket) socketFactory.createSocket("localhost", 7070);
-			// Create a PrintWriter to sent messages and MACs to the server
-			PrintWriter output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
-			String message = JOptionPane.showInputDialog(null, "Enter message:");
+			socket = (Socket) socketFactory.createSocket("localhost", 7070);
+			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
+			// Get nonce from the server
+			String nonce = input.readLine();
 			// Send message to the server
-			output.println(message);
-			// Calculate nonce
-			String nonce = "";//TODO
+			output.write(message + "\n");
+			output.flush();
 			// Calculate the MAC with shared key
-			String messageMAC = Util.fromByteArray(algorithm.digest((message + key + nonce).getBytes()));// TODO: calculate MAC
-			output.println(messageMAC);
+			String messageMAC = Util.fromByteArray(algorithm.digest((message + key + nonce).getBytes()));
+			output.write(messageMAC + "\n");
+			output.flush();
 			// Flush operations to send messages correctly
 			output.flush();
-			// Create a BufferedReader to read the response to the server
-			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			// Read response from the server
 			String response = input.readLine();
 			// Show the response in the client
 			JOptionPane.showMessageDialog(null, response);
 			// Closing connections
-			output.close();
-			input.close();
-			socket.close();
 		} catch (IOException ioException) {
 			ioException.printStackTrace();
 		} finally {
+			try {
+				input.close();
+				output.close();
+				socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			System.exit(0);
 		}
 	}

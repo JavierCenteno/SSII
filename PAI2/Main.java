@@ -12,24 +12,21 @@ import javax.swing.JOptionPane;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-		// Get key and algorithm
-		String key = null;
-		String algorithmName = null;
-		MessageDigest algorithm = null;
 		try {
-			key = JOptionPane.showInputDialog(null, "Enter key:");
-			algorithmName = JOptionPane.showInputDialog(null, "Enter the name of the algorithm:");
-			algorithm = MessageDigest.getInstance(algorithmName);
+			String key = JOptionPane.showInputDialog(null, "Enter key:");
+			String algorithmName = JOptionPane.showInputDialog(null, "Enter the name of the algorithm:");
+			MessageDigest algorithm = MessageDigest.getInstance(algorithmName);
+			String message = JOptionPane.showInputDialog(null, "Enter message:");
+			// Initialize server and client
+			IntegrityVerifierServer server = new IntegrityVerifierServer(key, algorithm);
+			IntegrityVerifierClient client = new IntegrityVerifierClient(key, algorithm);
+			Thread clientThread = new Thread(() -> client.sendMessage(message));
+			Thread serverThread = new Thread(() -> server.getMessage());
+			clientThread.start();
+			serverThread.start();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		// Initialize server and client
-		IntegrityVerifierServer server = new IntegrityVerifierServer(key, algorithm);
-		IntegrityVerifierClient client = new IntegrityVerifierClient(key, algorithm);
-		Thread serverThread = new Thread(() -> server.run());
-		Thread clientThread = new Thread(() -> client.run());
-		serverThread.start();
-		clientThread.start();
 	}
 
 }
