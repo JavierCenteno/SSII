@@ -1,4 +1,3 @@
-package src;
 
 /**
  * Class that holds utility methods.

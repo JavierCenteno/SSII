@@ -1,4 +1,4 @@
-package src;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class IntegrityVerifierServer {
 
 	/**
 	 * Constructs a server.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public IntegrityVerifierServer(String key, MessageDigest algorithm) throws IOException {
