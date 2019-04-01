@@ -1,4 +1,3 @@
-package src;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +30,8 @@ public class SSLServer {
 	/**
 	 * Attempts to get a client's message.
 	 */
-	public void getMessage() {
+		public static void main(String[] args) {
+
 		// ServerSocket
 		ServerSocket serverSocket = null;
 		// Socket to communicate with the client
@@ -51,7 +51,10 @@ public class SSLServer {
 			// Open a PrintWriter to send data to the client
 			output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-			// TODO
+			String clientInput=input.readLine();
+			output.write("Your secret message has been correctly stored.");
+			output.flush();
+			System.out.println(clientInput);
 
 			output.flush();
 		} catch (IOException ioException) {
