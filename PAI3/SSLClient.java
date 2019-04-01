@@ -42,6 +42,7 @@ public class SSLClient {
 			output.write(user+","+password+","+message+"\n");
 			output.flush();
 
+			System.out.println(input.readLine());
 
 		} catch (IOException ioException) {
 			ioException.printStackTrace();

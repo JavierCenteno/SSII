@@ -45,7 +45,6 @@ public class SSLServer {
 			// Create a ServerSocket listening at port 7070
 			serverSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(7070);
 			System.err.println("Waiting for connections...");
-			System.out.println(serverSocket.getEnabledCipherSuites());
 			socket = serverSocket.accept();
 			// Open a BufferedReader to read from the client
 			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
