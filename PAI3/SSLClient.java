@@ -3,6 +3,7 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 public class SSLClient {
 
@@ -31,7 +32,7 @@ public class SSLClient {
 		PrintWriter output = null;
 		try {
 			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			socket = (Socket) socketFactory.createSocket("localhost", 7070);
+			socket = (SSLSocket) socketFactory.createSocket("localhost", 7070);
 			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 			String user = JOptionPane.showInputDialog(null, "Enter user:");
