@@ -44,6 +44,7 @@ public class SSLServer {
 			SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 			// Create a ServerSocket listening at port 7070
 			serverSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(7070);
+			serverSocket.setEnabledCipherSuites(new String[] {"TLS_DHE_RSA_WITH_AES_256_CBC_SHA256"});
 			System.err.println("Waiting for connections...");
 			socket = serverSocket.accept();
 			// Open a BufferedReader to read from the client
@@ -59,7 +60,9 @@ public class SSLServer {
 			output.flush();
 		} catch (IOException ioException) {
 			ioException.printStackTrace();
-		} finally {
+		} catch (IllegalArgumentException illegalArgumentException) {
+			illegalArgumentException.printStackTrace();
+		}finally {
 			try {
 				input.close();
 				output.close();
