@@ -98,7 +98,7 @@ public class DataManager {
 		X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
 		KeyFactory keyFactory = null;
 		try {
-			keyFactory = KeyFactory.getInstance("RSA");
+			keyFactory = KeyFactory.getInstance("DSA");
 		} catch (NoSuchAlgorithmException e) {
 		}
 		return keyFactory.generatePublic(keySpec);
