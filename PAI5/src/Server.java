@@ -68,7 +68,7 @@ public class Server {
 					log("Received employee: \"" + receivedEmployee + "\"");
 					String receivedSignature = input.readLine();
 					log("Received signature: \"" + receivedSignature + "\"");
-					boolean verified = verify(DataManager.getPublicKeyOfEmployee(receivedEmployee), receivedMessage.getBytes(), stringToByteArray(receivedSignature));
+					boolean verified = verify(DataManager.getPublicKeyOfEmployee(receivedEmployee), receivedMessage.getBytes(), Util.stringToByteArray(receivedSignature));
 					if(verified) {
 						DataManager.addOrderToEmployee(receivedEmployee, receivedMessage);
 						log("Message verified correctly");
@@ -100,14 +100,6 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	public static byte[] stringToByteArray(String string) {
-		byte[] bytes = new byte[string.length() / 2];
-		for (int i = 0; i < string.length(); i += 2) {
-			bytes[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4) + Character.digit(string.charAt(i + 1), 16));
-		}
-		return bytes;
 	}
 
 	public static boolean verify(PublicKey key, byte[] data, byte[] signature) {
