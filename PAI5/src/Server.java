@@ -7,13 +7,11 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
-import java.security.SignatureException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ServerSocketFactory;
 
@@ -23,21 +21,27 @@ import javax.net.ServerSocketFactory;
 public class Server {
 
 	////////////////////////////////////////////////////////////////////////////////
+	// Instance fields
+
+	private Map<String, Integer> wrongOrders;
+
+	////////////////////////////////////////////////////////////////////////////////
 	// Instance initializers
 
 	/**
 	 * Constructs a server.
 	 */
 	public Server() {
+		wrongOrders = new HashMap<String, Integer>();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
 	// Instance methods
 
 	/**
-	 * Attempts to get a client's message.
+	 * Starts the server.
 	 */
-	public static void main(String[] args) {
+	public void start() {
 		// Server socket
 		ServerSocket serverSocket = null;
 		// Socket to communicate with the client
@@ -56,7 +60,30 @@ public class Server {
 				output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
 				String receivedMessage = input.readLine();
 				log("Received message: \"" + receivedMessage + "\"");
-				output.write("Your secret message has been correctly stored.");
+				if(wrongOrders.get(receivedMessage) > 2) {
+					log("Message rejected");
+					output.write("Due to repeated incorrect messages being received, we can't allow you to send that order anymore.");
+				} else {
+					String receivedEmployee = input.readLine();
+					log("Received employee: \"" + receivedEmployee + "\"");
+					String receivedSignature = input.readLine();
+					log("Received signature: \"" + receivedSignature + "\"");
+					boolean verified = verify(DataManager.getPublicKeyOfEmployee(receivedEmployee), receivedMessage.getBytes(), stringToByteArray(receivedSignature));
+					if(verified) {
+						DataManager.addOrderToEmployee(receivedEmployee, receivedMessage);
+						log("Message verified correctly");
+						output.write("Your order has been processed correctly.");
+					} else {
+						Integer numberOfWrongOrders = wrongOrders.get(receivedMessage);
+						if(numberOfWrongOrders == null) {
+							wrongOrders.put(receivedMessage, 1);
+						} else {
+							wrongOrders.put(receivedMessage, wrongOrders.get(receivedMessage) + 1);
+						}
+						log("Message couldn't be verified.");
+						output.write("Your identity couldn't be confirmed.");
+					}
+				}
 				output.flush();
 			}
 		} catch (IOException ioException) {
@@ -73,6 +100,14 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static byte[] stringToByteArray(String string) {
+		byte[] bytes = new byte[string.length() / 2];
+		for (int i = 0; i < string.length(); i += 2) {
+			bytes[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4) + Character.digit(string.charAt(i + 1), 16));
+		}
+		return bytes;
 	}
 
 	public static boolean verify(PublicKey key, byte[] data, byte[] signature) {
