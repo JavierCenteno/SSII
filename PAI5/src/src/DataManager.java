@@ -14,13 +14,15 @@ import java.util.Properties;
 public class DataManager {
 
 	private static Properties ORDERS;
+	private static String DATA_PATH;
 	private static String ORDERS_PATH;
 	private static String KEYS_PATH;
 
 	static {
-		ORDERS = loadProperties(ORDERS_PATH);
-		ORDERS_PATH = "data";
+		DATA_PATH = "data";
+		ORDERS_PATH = DATA_PATH + File.separator + "orders.properties";
 		KEYS_PATH = "keys";
+		ORDERS = loadProperties(ORDERS_PATH);
 	}
 
 	/**
@@ -58,12 +60,17 @@ public class DataManager {
 	}
 
 	public static String getOrdersOfEmployee(String employee) {
-		return ORDERS.getProperty(employee);
+		String orders = ORDERS.getProperty(employee);
+		if(orders == null) {
+			return "";
+		} else {
+			return orders;
+		}
 	}
 
 	public static void addOrderToEmployee(String employee, String order) {
-		ORDERS.setProperty(employee, ORDERS.getProperty(employee) + ";" + order);
-		saveProperties(ORDERS, ORDERS_PATH + File.separator + "orders.properties");
+		ORDERS.setProperty(employee, getOrdersOfEmployee(employee) + ";" + order);
+		saveProperties(ORDERS, ORDERS_PATH);
 	}
 
 	public static PublicKey getPublicKeyOfEmployee(String employee) {
